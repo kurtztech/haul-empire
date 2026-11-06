@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#12141a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Haul Empire — tap to drive, build a fleet, and conquer the open road. A trucking idle game.">
+<title>Haul Empire</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ffb020'/><text x='50' y='68' font-size='58' text-anchor='middle'>🚚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#12141a;--panel:#181b23;--card:#21252f;--card2:#2a2f3b;--line:#323849;--txt:#eef1f7;--mut:#98a1b3;--acc:#ffb020;--acc2:#ff7a1a;--good:#4ade80;--bad:#f87171;--blue:#60a5fa;--n:0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#0b0c10;color:var(--txt);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{display:flex;justify-content:center}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+.bungee{font-family:Bungee,Impact,system-ui,sans-serif;letter-spacing:.5px}
+#app{width:100%;max-width:520px;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg);box-shadow:0 0 40px #000}
+
+/* header */
+#top{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 8px) 14px 8px;background:linear-gradient(#1b1f29,#151820);border-bottom:1px solid var(--line);z-index:5}
+#cash{font-size:28px;color:var(--good);line-height:1.05;text-shadow:0 2px 0 #0006}
+#rate{font-size:13px;color:var(--mut);margin-top:2px}
+#rate b{color:var(--txt)}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--card2);color:var(--acc);white-space:nowrap}
+#shareTag{color:var(--blue)}
+
+/* scene */
+#scene{position:relative;height:36vh;min-height:210px;max-height:330px;overflow:hidden;touch-action:manipulation;cursor:pointer;
+  background:linear-gradient(to bottom,var(--s0,#5ab8ff) 0%,var(--s1,#bfe6ff) 56%,var(--gr,#5aa04c) 56%);transition:background .6s}
+.layer{position:absolute;left:0;right:0;background-repeat:repeat-x;background-size:auto 100%;pointer-events:none}
+#far{bottom:42%;height:40%}
+#mid{bottom:36%;height:36%}
+#near{bottom:36%;height:20%;z-index:2}
+#road{position:absolute;left:0;right:0;bottom:0;height:37%;background:var(--road,#3a3d45);z-index:1;box-shadow:inset 0 3px 0 #0003}
+#road:before,#road:after{content:"";position:absolute;left:0;right:0;height:3px;background:#ffffff55}
+#road:before{top:6%}#road:after{bottom:6%}
+#dash{position:absolute;left:0;right:0;top:44%;height:4px;background:repeating-linear-gradient(90deg,var(--line2,#ffd34d) 0 34px,transparent 34px 78px)}
+#sun{position:absolute;width:44px;height:44px;border-radius:50%;background:radial-gradient(#fff7c2,#ffd34d 60%,#ffb02000 72%);box-shadow:0 0 40px #ffd34d88;pointer-events:none}
+#planet{position:absolute;top:9%;right:14%;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#9fd6ff,#2a6fd6 45%,#1d4f2f 70%,#0b1d3a);box-shadow:0 0 24px #4aa3ff66;display:none;pointer-events:none}
+#stars{position:absolute;inset:0 0 40% 0;opacity:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 80px 70px,#fff,transparent),radial-gradient(1.5px 1.5px at 150px 20px,#fff,transparent),radial-gradient(1px 1px at 210px 90px,#fff,transparent),radial-gradient(1px 1px at 260px 40px,#fff,transparent),radial-gradient(1.5px 1.5px at 330px 75px,#fff,transparent);background-size:360px 120px}
+#night{position:absolute;inset:0;background:#0a1030;opacity:0;pointer-events:none;z-index:3}
+#traffic{position:absolute;inset:0;z-index:2;pointer-events:none}
+.car{position:absolute;bottom:20%;height:13%;transform:scaleX(-1)}
+.car svg{height:100%;width:auto;display:block}
+#truckWrap{position:absolute;bottom:4%;right:20%;height:33%;z-index:4;pointer-events:none;filter:brightness(calc(1 - var(--n)*.3)) drop-shadow(0 4px 2px #0005)}
+#truck{height:100%;animation:bob .5s ease-in-out infinite alternate}
+#truck svg{height:100%;width:auto;display:block;overflow:visible}
+@keyframes bob{to{transform:translateY(-1.5px)}}
+.wh{animation:spin var(--ws,.4s) linear infinite;transform-box:view-box}
+@keyframes spin{to{transform:rotate(360deg)}}
+.beam{opacity:var(--n)}
+#fx{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.float{position:absolute;font-weight:800;font-size:17px;color:#fff;text-shadow:0 2px 0 #000a,0 0 8px #000;white-space:nowrap;animation:floatUp .9s ease-out forwards;transform:translate(-50%,-50%)}
+.float.sm{font-size:12px;opacity:.85;color:#d9ffe6}
+.float.big{font-size:22px;color:var(--acc)}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}15%{opacity:1;transform:translate(-50%,-60%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-220%) scale(1)}}
+.puff{position:absolute;width:12px;height:12px;border-radius:50%;background:#cfd3da;opacity:.8;animation:puff .8s ease-out forwards}
+@keyframes puff{to{transform:translate(-30px,-26px) scale(2.6);opacity:0}}
+.conf{position:absolute;width:7px;height:10px;border-radius:2px;animation:conf 1s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes conf{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+#banner{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%) scale(0);z-index:7;text-align:center;pointer-events:none;opacity:0}
+#banner.show{animation:pop 1.3s ease-out forwards}
+#banner .t{font-family:Bungee,Impact,sans-serif;font-size:26px;color:var(--acc);text-shadow:0 3px 0 #000,0 0 18px #000a;white-space:nowrap}
+#banner .s{font-weight:800;font-size:16px;color:#fff;text-shadow:0 2px 0 #000}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}25%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+#hint{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:7;font-family:Bungee,Impact,sans-serif;font-size:18px;color:#fff;text-shadow:0 2px 0 #000,0 0 12px #000;pointer-events:none;animation:pulse 1s ease-in-out infinite alternate;white-space:nowrap}
+@keyframes pulse{to{transform:translateX(-50%) scale(1.12)}}
+#boosts{position:absolute;top:8px;left:8px;z-index:7;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.chip{font-size:12px;font-weight:800;padding:4px 8px;border-radius:99px;background:#000a;color:#fff;border:1px solid #ffffff33}
+.chip.tail{color:#7dd3fc}.chip.nitro{color:#fca5a5}
+.gold{position:absolute;z-index:8;font-size:38px;line-height:1;cursor:pointer;animation:gbob .7s ease-in-out infinite alternate;filter:drop-shadow(0 0 10px #ffd34d) drop-shadow(0 0 4px #fff);padding:10px;touch-action:manipulation}
+.gold:after{content:"RUSH!";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);font:800 10px system-ui;color:#000;background:var(--acc);border-radius:4px;padding:1px 4px}
+@keyframes gbob{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-8px) rotate(8deg)}}
+.gold.out{animation:gout .35s forwards}
+@keyframes gout{to{transform:scale(1.8);opacity:0}}
+
+/* delivery */
+#delivery{padding:8px 14px 9px;background:var(--panel);border-bottom:1px solid var(--line)}
+.drow{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700}
+.drow.small{font-size:12px;color:var(--mut);font-weight:600;margin-top:6px}
+#dPay{color:var(--good)}
+.bar{height:12px;background:#0d0f14;border-radius:99px;overflow:hidden;margin-top:5px;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc2),var(--acc));border-radius:99px;transition:width .08s}
+.cbar{height:4px;background:#0d0f14;border-radius:99px;overflow:hidden;margin-top:4px}
+.cbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#c084fc,#f472b6)}
+#combo.hot{color:#f472b6}
+
+/* panel */
+#panel{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 16px;overscroll-behavior:contain}
+.card{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+.card .ic{width:44px;height:44px;flex:none;border-radius:12px;background:var(--card2);display:grid;place-items:center;font-size:24px}
+.card .info{flex:1;min-width:0}
+.nm{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.own{display:inline-block;min-width:22px;text-align:center;font-size:12px;background:var(--acc);color:#1a1200;border-radius:99px;padding:1px 6px;margin-left:4px;vertical-align:2px}
+.sub{font-size:12px;color:var(--mut);margin-top:2px}
+.sub b{color:var(--good);font-weight:700}
+.ms{height:4px;background:#0d0f14;border-radius:99px;margin-top:6px;overflow:hidden}
+.ms i{display:block;height:100%;background:var(--blue);width:0}
+.buy{flex:none;min-width:88px;padding:8px 10px;border-radius:12px;background:#3a3f4d;color:#aab;display:flex;flex-direction:column;align-items:center;line-height:1.15;transition:transform .08s,background .15s}
+.buy small{font-size:11px;opacity:.8}
+.buy b{font-size:14px}
+.buy.ok{background:linear-gradient(#ffc23d,#ff9a1a);color:#2a1700;box-shadow:0 3px 0 #b85f00}
+.buy.ok:active{transform:translateY(2px);box-shadow:0 1px 0 #b85f00}
+.buy.done{background:#1f3b2a;color:var(--good)}
+.card.mystery{opacity:.55;border-style:dashed}
+.card.mystery .ic{filter:grayscale(1) brightness(.4)}
+.buybar{display:flex;align-items:center;gap:6px;margin:0 0 10px;font-size:12px;color:var(--mut);font-weight:700}
+.buybar span{margin-right:4px}
+.seg{flex:1;padding:7px 0;border-radius:10px;background:var(--card);border:1px solid var(--line);font-weight:800;font-size:13px}
+.seg.on{background:var(--acc);color:#2a1700;border-color:var(--acc)}
+.sect{font-size:12px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin:14px 4px 8px}
+.empty{text-align:center;color:var(--mut);padding:26px 16px;font-size:14px}
+.route.cur{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.route.locked{opacity:.5}
+.ipo{background:linear-gradient(135deg,#1e2a44,#2a1e44);border:1px solid #3d4a77;border-radius:16px;padding:14px;margin-bottom:10px}
+.ipo h3{margin:0 0 4px;font-family:Bungee,Impact,sans-serif;font-weight:400;font-size:18px;color:#93c5fd}
+.ipo p{margin:4px 0;font-size:13px;color:#c7cfe0}
+.ipo .big{font-size:22px;font-weight:800;color:#fff}
+.btn{display:block;width:100%;padding:12px;border-radius:12px;font-weight:800;font-size:15px;background:#3a3f4d;color:#99a;margin-top:10px}
+.btn.ok{background:linear-gradient(#7cb8ff,#3b82f6);color:#fff;box-shadow:0 3px 0 #1d4ed8}
+.btn.ghost{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.btn.danger{background:#3b1d22;color:#fca5a5;border:1px solid #5c2a31}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.ach{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;font-size:11px;color:var(--mut)}
+.ach .ai{font-size:22px;filter:grayscale(1) opacity(.35)}
+.ach.got{color:var(--txt);border-color:#6b5a1e;background:#2a2516}
+.ach.got .ai{filter:none}
+.ach b{display:block;font-size:11px;margin-top:2px}
+.stats{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 12px}
+.stats div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.stats div:last-child{border:0}
+.stats span{color:var(--mut)}
+.row2{display:flex;gap:8px}.row2 .btn{flex:1}
+
+/* tabs */
+#tabs{display:flex;background:#151820;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{flex:1;padding:8px 0 9px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px;font-weight:700;color:var(--mut);position:relative}
+#tabs button .ti{font-size:21px;filter:grayscale(.8);transition:transform .15s}
+#tabs button.on{color:var(--acc)}
+#tabs button.on .ti{filter:none;transform:translateY(-2px) scale(1.1)}
+#tabs button.on:before{content:"";position:absolute;top:0;left:25%;right:25%;height:3px;border-radius:0 0 3px 3px;background:var(--acc)}
+.dot{position:absolute;top:6px;right:calc(50% - 20px);width:9px;height:9px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 2px #151820;display:none}
+.dot.show{display:block;animation:dotp 1s infinite alternate}
+@keyframes dotp{to{transform:scale(1.25)}}
+
+/* toasts & modal */
+#toasts{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 70px);z-index:20;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 12px}
+.toast{background:#0c0e13ee;border:1px solid var(--line);border-left:4px solid var(--acc);padding:9px 14px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 8px 24px #0008;animation:tin .25s ease-out,tout .3s ease-in 2.6s forwards;max-width:100%}
+.toast.ach{border-left-color:#facc15}.toast.blue{border-left-color:var(--blue)}.toast.gt{border-left-color:#ffd34d;background:#2a2108ee}
+@keyframes tin{from{transform:translateY(12px);opacity:0}}
+@keyframes tout{to{transform:translateY(12px);opacity:0}}
+#modal{position:absolute;inset:0;background:#000b;z-index:30;display:grid;place-items:center;padding:20px}
+#modal[hidden]{display:none}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:380px;width:100%;text-align:center;animation:tin .25s}
+.mbox h2{font-family:Bungee,Impact,sans-serif;font-weight:400;margin:4px 0 8px;color:var(--acc);font-size:22px}
+.mbox p{color:#c7cfe0;font-size:14px;margin:8px 0}
+.mbox .em{font-size:44px}
+.mbox .money{font-size:26px;font-weight:800;color:var(--good)}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (min-width:521px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+@media (max-height:640px){#scene{height:32vh;min-height:180px}#cash{font-size:24px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div><div id="cash" class="bungee">$0</div><div id="rate"><b>$0</b> /sec</div></div>
+    <div class="hright"><div class="tag" id="routeTag">📍 Local Runs</div><div class="tag" id="shareTag" hidden>📈 0 shares</div></div>
+  </header>
+  <div id="scene">
+    <div id="stars"></div><div id="sun"></div><div id="planet"></div>
+    <div class="layer" id="far"></div><div class="layer" id="mid"></div><div class="layer" id="near"></div>
+    <div id="road"><div id="dash"></div></div>
+    <div id="traffic"></div>
+    <div id="night"></div>
+    <div id="truckWrap"><div id="truck"></div></div>
+    <div id="fx"></div>
+    <div id="banner"><div class="t">DELIVERED!</div><div class="s"></div></div>
+    <div id="boosts"></div>
+    <div id="hint">👆 TAP TO DRIVE</div>
+  </div>
+  <div id="delivery">
+    <div class="drow"><span id="dLabel">📦 Delivery #1</span><span id="dPay">+$0</span></div>
+    <div class="bar"><i id="dBar"></i></div>
+    <div class="drow small"><span id="tapVal">$1 / tap</span><span id="combo">Combo ×1.00</span></div>
+    <div class="cbar"><i id="cBar"></i></div>
+  </div>
+  <main id="panel"></main>
+  <nav id="tabs">
+    <button data-tab="fleet" class="on"><span class="ti">🚛</span>Fleet<i class="dot"></i></button>
+    <button data-tab="upgrades"><span class="ti">🔧</span>Upgrades<i class="dot"></i></button>
+    <button data-tab="routes"><span class="ti">🗺️</span>Routes<i class="dot"></i></button>
+    <button data-tab="empire"><span class="ti">🏢</span>Empire<i class="dot"></i></button>
+  </nav>
+  <div id="toasts"></div>
+  <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+</div>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+
+/* ---------- data ---------- */
+const FLEET=[
+ {name:'Pickup Truck',icon:'🛻',base:15,rate:.2},
+ {name:'Box Van',icon:'🚐',base:120,rate:1.4},
+ {name:'Day Cab Semi',icon:'🚛',base:1300,rate:9},
+ {name:'Reefer Rig',icon:'🧊',base:14000,rate:50},
+ {name:'Fuel Tanker',icon:'⛽',base:150000,rate:270},
+ {name:'Car Hauler',icon:'🚗',base:1.6e6,rate:1500},
+ {name:'Heavy Haul',icon:'🏗️',base:2e7,rate:8500},
+ {name:'Road Train',icon:'🚂',base:3.3e8,rate:50000},
+ {name:'Autonomous Convoy',icon:'🤖',base:5.1e9,rate:310000},
+ {name:'Hyperfreight Pod',icon:'🚀',base:7.5e10,rate:2e6},
+];
+const MILES=[10,25,50,100,150,200,250,300,400,500,600,700,800,900,1000];
+const ROUTES=[
+ {name:'Local Runs',icon:'🏘️',cost:0,mult:1,desc:'Groceries, furniture and garage-sale finds.'},
+ {name:'Farm Country',icon:'🌾',cost:2.5e4,mult:1.5,desc:'Grain, feed and fresh produce.'},
+ {name:'Mountain Pass',icon:'🏔️',cost:3e6,mult:2.5,desc:'Steep grades, big paydays.'},
+ {name:'Desert Express',icon:'🌵',cost:5e8,mult:4,desc:'Long, hot hauls across the badlands.'},
+ {name:'Ice Road',icon:'❄️',cost:1e11,mult:7,desc:'Frozen lakes. Hazard pay included.'},
+ {name:'Neon Megacity',icon:'🌃',cost:3e13,mult:12,desc:'Round-the-clock deliveries in the city that never sleeps.'},
+ {name:'Lunar Haul',icon:'🌕',cost:1e16,mult:25,desc:'Low gravity, astronomical rates.'},
+];
+const UPS=[];
+const T=(id,cost,ic,name,desc,e)=>UPS.push({id,cost,ic,name,desc,e});
+T('tap1',100,'🦶','Lead Foot','Tap value ×2',{tap:2});
+T('tap2',750,'📯','Air Horn','Tap value ×2',{tap:2});
+T('auto1',3000,'🧭','Auto-Dispatch','Your rig drives itself: 2 taps/sec',{auto:2});
+T('tap3',1e4,'🛑','Jake Brake','Tap value ×2',{tap:2});
+T('combo1',5e4,'🎵','Rhythm Driving','Combo bonus caps at ×5 instead of ×3',{combo:5});
+T('tap4',1e5,'📻','CB Radio','Each tap also earns 1% of your $/sec',{pct:.01});
+T('broker',3e5,'🤝','Freight Broker','Rush orders show up twice as often and stay longer',{broker:1});
+T('night',2e6,'🌙','Night Shift Crews','Offline earnings 50% → 100%',{off:1});
+T('auto2',5e6,'🛣️','Cruise Control','Auto-drive at 5 taps/sec',{auto:5});
+T('tap5',1e7,'📱','Dispatch App','Taps earn +2% of $/sec',{pct:.02});
+T('combo2',1e8,'🎸','Highway Rock','Combo bonus caps at ×8',{combo:8});
+T('tap6',1e9,'🛰️','Satellite Routing','Taps earn +3% of $/sec',{pct:.03});
+T('auto3',1e10,'🧠','Autopilot','Auto-drive at 10 taps/sec',{auto:10});
+T('tap7',1e12,'⚡','Neural Dispatch','Taps earn +5% of $/sec',{pct:.05});
+[[2e4,'💳','Fuel Card',1.25],[5e5,'📝','Union Contract',1.5],[5e7,'⚓','Port Partnership',2],[5e9,'🚆','Rail Intermodal',2],[5e11,'🛩️','Air Cargo Wing',2],[5e13,'🌐','Global Logistics Net',3],[5e15,'🪐','Orbital Depot',3],[5e17,'♾️','Infinite Supply Chain',5]]
+ .forEach(([c,ic,n,g],k)=>T('g'+k,c,ic,n,'All income ×'+g,{g}));
+const FU=[[1,10,'Retreaded Tires'],[5,50,'Veteran Drivers'],[25,500,'GPS Telematics'],[50,5e4,'Aero Skirts'],[100,5e6,'Platooning'],[150,5e8,'Hydrogen Swap'],[200,5e10,'Fusion Drives']];
+FLEET.forEach((f,i)=>FU.forEach(([need,m,n],k)=>UPS.push({id:`f${i}_${k}`,cost:f.base*m,ic:f.icon,name:n,desc:`${f.name}s ×2`,e:{f:i,x:2},need})));
+
+const ACH=[
+ ['🏁','First Delivery','Complete a delivery',()=>S.deliveries>=1],
+ ['🛞','Road Warrior','100 deliveries',()=>S.deliveries>=100],
+ ['🗺️','Million Miler','1,000 deliveries',()=>S.deliveries>=1000],
+ ['👑','Road Legend','10,000 deliveries',()=>S.deliveries>=1e4],
+ ['👆','Itchy Throttle','Tap 500 times',()=>S.taps>=500],
+ ['💪','Iron Thumb','Tap 5,000 times',()=>S.taps>=5000],
+ ['🪙','Pocket Change','Earn $1K total',()=>S.allEarn>=1e3],
+ ['💵','Millionaire','Earn $1M total',()=>S.allEarn>=1e6],
+ ['💰','Billionaire','Earn $1B total',()=>S.allEarn>=1e9],
+ ['🏦','Trillionaire','Earn $1T total',()=>S.allEarn>=1e12],
+ ['💎','Quadrillionaire','Earn $1Qa total',()=>S.allEarn>=1e15],
+ ['🚚','Small Fleet','Own 10 vehicles',()=>fleetTotal()>=10],
+ ['🚛','Fleet Owner','Own 100 vehicles',()=>fleetTotal()>=100],
+ ['🏭','Logistics Giant','Own 500 vehicles',()=>fleetTotal()>=500],
+ ['🎖️','Full Lineup','Own every vehicle type',()=>S.fleet.every(n=>n>0)],
+ ['📦','Rush Hour','Catch a rush order',()=>S.goldens>=1],
+ ['🎯','Freight Hunter','Catch 25 rush orders',()=>S.goldens>=25],
+ ['🔥','In the Zone','Max out your combo',()=>S.maxCombo>=100],
+ ['🏔️','Mountain Man','Reach Mountain Pass',()=>S.route>=2],
+ ['🌕','To the Moon','Reach Lunar Haul',()=>S.route>=6],
+ ['🔔','Ring the Bell','Go public',()=>S.ipos>=1],
+ ['📈','Serial Founder','Go public 5 times',()=>S.ipos>=5],
+ ['⏱️','Rolling','Earn $100/sec',()=>D.income>=100],
+ ['🚀','Juggernaut','Earn $1M/sec',()=>D.income>=1e6],
+ ['🌌','Unstoppable','Earn $1B/sec',()=>D.income>=1e9],
+];
+
+/* ---------- format ---------- */
+const SUF=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
+function fmt(n){
+ if(!isFinite(n))return '∞'; if(n<0)return '-'+fmt(-n);
+ if(n<1000)return n<10?(Math.floor(n*10)/10).toString():Math.floor(n).toString();
+ const i=Math.floor(Math.log10(n)/3);
+ if(i<SUF.length){const v=n/Math.pow(10,i*3);return (v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v).toString())+SUF[i];}
+ return n.toExponential(2).replace('+','');
+}
+const money=n=>'$'+fmt(n);
+function dur(s){s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}h ${m}m`:m?`${m}m ${s%60}s`:`${s}s`}
+
+/* ---------- state ---------- */
+const KEY='haulEmpire_v1';
+const runState=()=>({cash:0,runEarn:0,fleet:FLEET.map(()=>0),ups:{},route:0,prog:0,boosts:[]});
+const newGame=()=>Object.assign(runState(),{allEarn:0,shares:0,ipos:0,taps:0,deliveries:0,goldens:0,maxCombo:0,ach:{},sound:true,haptic:true,buyAmt:1,last:Date.now(),started:Date.now()});
+let S,D={};
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&typeof d==='object'){S=Object.assign(newGame(),d);while(S.fleet.length<FLEET.length)S.fleet.push(0);return true}}catch(e){}S=newGame();return false}
+function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const fleetTotal=()=>S.fleet.reduce((a,b)=>a+b,0);
+const milestones=n=>MILES.filter(m=>n>=m).length;
+const nextMile=n=>MILES.find(m=>m>n)||Infinity;
+const prevMile=n=>{let p=0;for(const m of MILES)if(n>=m)p=m;return p};
+const totalSharesFor=e=>Math.floor(Math.sqrt(e/1e7));
+const pendingShares=()=>Math.max(0,totalSharesFor(S.allEarn)-S.shares);
+
+function calc(){
+ const now=Date.now();
+ if(S.boosts.length)S.boosts=S.boosts.filter(b=>b.until>now);
+ let tapMult=1,tapPct=0,auto=0,global=1,comboCap=3,offline=.5,broker=false;
+ const fm=FLEET.map((f,i)=>Math.pow(2,milestones(S.fleet[i])));
+ for(const u of UPS){if(!S.ups[u.id])continue;const e=u.e;
+  if(e.tap)tapMult*=e.tap;if(e.pct)tapPct+=e.pct;if(e.auto)auto=Math.max(auto,e.auto);if(e.g)global*=e.g;
+  if(e.combo)comboCap=Math.max(comboCap,e.combo);if(e.off)offline=e.off;if(e.broker)broker=true;if('f' in e)fm[e.f]*=e.x}
+ const achN=Object.keys(S.ach).length;
+ const perm=ROUTES[S.route].mult*(1+.02*S.shares)*(1+.01*achN)*global;
+ let tail=1,nitro=1;for(const b of S.boosts){if(b.k==='tail')tail*=b.m;if(b.k==='nitro')nitro*=b.m}
+ const unit=FLEET.map((f,i)=>f.rate*fm[i]*perm);
+ const income=unit.reduce((a,u,i)=>a+u*S.fleet[i],0)*tail;
+ const baseTap=(tapMult*perm+income*tapPct)*nitro;
+ D={tapMult,tapPct,auto,global,comboCap,offline,broker,fm,unit,income,baseTap,perm,tail,nitro,achN};
+}
+function earn(v){S.cash+=v;S.runEarn+=v;S.allEarn+=v}
+
+/* ---------- sound ---------- */
+let AC=null;
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,d,type,g,when,slide){if(!S.sound)return;const a=ac();if(!a)return;const t0=a.currentTime+(when||0);const o=a.createOscillator(),gn=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t0);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t0+d);gn.gain.setValueAtTime(g||.04,t0);gn.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(gn).connect(a.destination);o.start(t0);o.stop(t0+d+.03)}
+const SFX={
+ tap:()=>tone(420+Math.min(combo,100)*5,.05,'triangle',.06),
+ buy:()=>{tone(660,.07,'square',.025);tone(990,.1,'square',.025,.06)},
+ horn:()=>{tone(233,.38,'sawtooth',.03);tone(294,.38,'sawtooth',.03);[1046,1318,1568].forEach((f,i)=>tone(f,.12,'triangle',.035,.3+i*.06))},
+ gold:()=>[523,659,784,1046,1318].forEach((f,i)=>tone(f,.14,'square',.03,i*.05)),
+ big:()=>[392,523,659,784,1046].forEach((f,i)=>tone(f,.22,'triangle',.05,i*.09)),
+ err:()=>tone(150,.12,'square',.03),
+};
+const buzz=ms=>{if(S.haptic&&navigator.vibrate)try{navigator.vibrate(ms)}catch(e){}};
+
+/* ---------- scenery ---------- */
+const THEMES=[
+ {sky:['#5ab8ff','#c4e9ff'],gr:'#5aa04c',road:'#3a3d45',line:'#ffd34d',far:['city','#8fb3d4'],mid:['hills','#69b562'],near:['trees','#2f7a3a']},
+ {sky:['#6cc3ff','#fff0c4'],gr:'#c9a94a',road:'#44464d',line:'#ffffff',far:['hills','#9cc58a'],mid:['fields','#e2c25a'],near:['fence','#7a5231']},
+ {sky:['#4e8fd9','#d2e4f7'],gr:'#3f7a4e',road:'#36383f',line:'#ffd34d',far:['peaks','#7b8fb0',1],mid:['pines','#2f6b4a'],near:['pines','#1f4f36']},
+ {sky:['#ff9157','#ffe2a6'],gr:'#e2b66f',road:'#4a4038',line:'#ffffff',far:['mesa','#c46a3d'],mid:['hills','#e0a35e'],near:['cactus','#3f7f43']},
+ {sky:['#93badf','#eef6ff'],gr:'#f2f7fd',road:'#8aa3bb',line:'#2f6aa3',far:['peaks','#a9bfd8',1],mid:['hills','#e2edf9'],near:['pines','#2c5a52',1]},
+ {sky:['#0d0726','#3a1458'],gr:'#1a1030',road:'#1b1b29',line:'#3ff0ff',far:['city','#2a1a4f',1],mid:['city','#1c113d',1],near:['lamps','#ff3fa4'],night:1},
+ {sky:['#010208','#141a2e'],gr:'#9fa2ad',road:'#5b5e69',line:'#ffb020',far:['hills','#4d5163'],mid:['craters','#868a99'],near:['beacons','#c9ccd6'],night:1,space:1},
+];
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const svgW=(W,H,inner)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${inner}</svg>`;
+function wave(W,H,base,parts,col,extra){let d=`M0 ${H}`;for(let x=0;x<=W;x+=8){let y=base;for(const[a,k,p]of parts)y-=a*Math.sin(2*Math.PI*k*x/W+p);d+=` L${x} ${y.toFixed(1)}`}return `<path d="${d} L${W} ${H}Z" fill="${col}" ${extra||''}/>`}
+function genLayer(spec,kind,seed){
+ const [type,c,flag]=spec;const r=rng(seed);
+ const W=kind==='near'?260:400,H=kind==='near'?60:100;let s='';
+ if(type==='city'){let x=0;while(x<W){const w=14+r()*26|0,h=(kind==='far'?30:20)+r()*(kind==='far'?65:55),ww=Math.min(w,W-x);
+   s+=`<rect x="${x}" y="${(H-h).toFixed(1)}" width="${ww}" height="${H}" fill="${c}"/>`;
+   for(let wy=H-h+6;wy<H-6;wy+=9)for(let wx=x+3;wx<x+ww-4;wx+=7)if(r()<(flag?.45:.35))s+=`<rect x="${wx}" y="${wy.toFixed(1)}" width="3" height="4" fill="${flag?(r()<.5?'#ff3fa4':'#3ff0ff'):'#fff'}" opacity="${flag?.85:.3}"/>`;
+   x+=ww+(r()*5|0)}}
+ else if(type==='hills')s=wave(W,H,H*.5,[[10,2,r()*6],[6,5,r()*6],[3,9,r()*6]],c);
+ else if(type==='fields'){s=wave(W,H,H*.55,[[8,2,1],[4,6,2]],c);for(let k=0;k<4;k++)s+=wave(W,H,H*(.68+k*.08),[[6-k,2,1],[3,6,2]],'none',`stroke="#00000022" stroke-width="2"`)}
+ else if(type==='craters'){s=wave(W,H,H*.5,[[7,2,1],[4,7,3]],c);for(let k=0;k<6;k++){const x=20+k*62+r()*20;s+=`<ellipse cx="${x.toFixed(0)}" cy="${(H*.72+r()*H*.15).toFixed(0)}" rx="${(8+r()*12).toFixed(0)}" ry="${(3+r()*3).toFixed(0)}" fill="#00000033"/>`}}
+ else if(type==='peaks'){const pts=[[0,H*.72]];let x=0;while(x<W-50){const pw=50+r()*60,px=x+pw/2,py=H*(.08+r()*.3);pts.push([px,py]);x=Math.min(x+pw,W);pts.push([x,H*(.5+r()*.2)])}
+   pts[pts.length-1]=[W,H*.72];
+   s=`<path d="M0 ${H} ${pts.map(p=>`L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')} L${W} ${H}Z" fill="${c}"/>`;
+   if(flag)for(let k=1;k<pts.length-1;k+=2){const[p,a,b]=[pts[k],pts[k-1],pts[k+1]],l=(q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t];const A=l(a,.3),B=l(b,.3);s+=`<path d="M${p[0].toFixed(1)} ${p[1].toFixed(1)} L${A[0].toFixed(1)} ${A[1].toFixed(1)} L${((A[0]+p[0])/2).toFixed(1)} ${(A[1]-3).toFixed(1)} L${p[0].toFixed(1)} ${(A[1]+2).toFixed(1)} L${((B[0]+p[0])/2).toFixed(1)} ${(B[1]-3).toFixed(1)} L${B[0].toFixed(1)} ${B[1].toFixed(1)}Z" fill="#fff"/>`}}
+ else if(type==='mesa'){const base=H*.8;let d=`M0 ${H} L0 ${base}`,x=0;while(x<W-60){x+=10+r()*30;const top=H*(.2+r()*.3),w=30+r()*50;d+=` L${x.toFixed(0)} ${base} L${(x+8).toFixed(0)} ${top.toFixed(0)} L${(x+8+w).toFixed(0)} ${top.toFixed(0)} L${(x+16+w).toFixed(0)} ${base}`;x+=16+w}d+=` L${W} ${base} L${W} ${H}Z`;s=`<path d="${d}" fill="${c}"/><rect y="${base-1}" width="${W}" height="${H}" fill="${c}"/>`}
+ else if(type==='pines'){const dense=kind==='mid';if(dense)s+=`<rect y="${H-10}" width="${W}" height="10" fill="${c}"/>`;
+   for(let x=8;x<W-8;x+=(dense?9:34)*(.7+r()*.6)){const h=(dense?.35:.75)*H+r()*(dense?.4:.25)*H,w=h*.45,b=H-(dense?4:0);
+    if(!dense)s+=`<rect x="${(x-2).toFixed(1)}" y="${(b-h*.18).toFixed(1)}" width="4" height="${(h*.18).toFixed(1)}" fill="#4a3424"/>`;
+    for(let t=0;t<3;t++){const yb=b-h*.15-t*h*.25,yt=yb-h*.42;s+=`<path d="M${(x-w/2+t*w*.1).toFixed(1)} ${yb.toFixed(1)} L${x.toFixed(1)} ${yt.toFixed(1)} L${(x+w/2-t*w*.1).toFixed(1)} ${yb.toFixed(1)}Z" fill="${c}"/>`}
+    if(flag)s+=`<path d="M${(x-w*.15).toFixed(1)} ${(b-h*.75).toFixed(1)} L${x.toFixed(1)} ${(b-h*.92).toFixed(1)} L${(x+w*.15).toFixed(1)} ${(b-h*.75).toFixed(1)}Z" fill="#fff"/>`}}
+ else if(type==='trees'){for(let x=14;x<W-14;x+=40+r()*40){const h=H*(.55+r()*.35),rr=h*.33;s+=`<rect x="${(x-2.5).toFixed(1)}" y="${(H-h*.45).toFixed(1)}" width="5" height="${(h*.45).toFixed(1)}" fill="#5b4030"/><circle cx="${x.toFixed(1)}" cy="${(H-h+rr).toFixed(1)}" r="${rr.toFixed(1)}" fill="${c}"/><circle cx="${(x-rr*.5).toFixed(1)}" cy="${(H-h+rr*1.5).toFixed(1)}" r="${(rr*.75).toFixed(1)}" fill="${c}"/>`}
+   for(let x=120;x<W;x+=260)s+=`<rect x="${x}" y="${H*.25}" width="3" height="${H*.75}" fill="#666"/><rect x="${x-10}" y="${H*.2}" width="40" height="${H*.22}" rx="2" fill="#2e7d4f"/><rect x="${x-8}" y="${H*.24}" width="36" height="${H*.14}" fill="none" stroke="#fff" stroke-width="1"/>`}
+ else if(type==='fence'){s+=`<rect y="${H*.55}" width="${W}" height="3" fill="${c}"/><rect y="${H*.75}" width="${W}" height="3" fill="${c}"/>`;for(let x=6;x<W;x+=26)s+=`<rect x="${x}" y="${H*.45}" width="4" height="${H*.55}" fill="${c}"/>`;s+=`<circle cx="140" cy="${H*.3}" r="${H*.25}" fill="#3d7a3a"/><rect x="138" y="${H*.45}" width="4" height="${H*.55}" fill="#5b4030"/>`}
+ else if(type==='cactus'){for(let x=20;x<W-20;x+=60+r()*70){const h=H*(.5+r()*.45),w=7;s+=`<rect x="${x-w/2}" y="${(H-h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" rx="3.5" fill="${c}"/><path d="M${x-w/2} ${(H-h*.45).toFixed(1)} h-7 v-${(h*.25).toFixed(1)}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M${x+w/2} ${(H-h*.6).toFixed(1)} h7 v-${(h*.2).toFixed(1)}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/>`;s+=`<ellipse cx="${(x+30).toFixed(0)}" cy="${H-3}" rx="9" ry="4" fill="#a8763f"/>`}}
+ else if(type==='lamps'){for(let x=30;x<W;x+=130){s+=`<circle cx="${x+10}" cy="${H*.12}" r="14" fill="${c}" opacity=".25"/><rect x="${x}" y="${H*.1}" width="3" height="${H*.9}" fill="#3b3550"/><rect x="${x}" y="${H*.08}" width="16" height="3" fill="#3b3550"/><circle cx="${x+14}" cy="${H*.12}" r="3.5" fill="${c}"/>`}
+   s+=`<rect x="70" y="${H*.15}" width="44" height="${H*.3}" rx="3" fill="none" stroke="#3ff0ff" stroke-width="2"/><rect x="190" y="${H*.25}" width="34" height="${H*.22}" rx="3" fill="none" stroke="#ff3fa4" stroke-width="2"/>`}
+ else if(type==='beacons'){for(let x=40;x<W;x+=110)s+=`<rect x="${x}" y="${H*.35}" width="2" height="${H*.65}" fill="${c}"/><circle cx="${x+1}" cy="${H*.33}" r="3" fill="#ff4d4d"/><circle cx="${x+1}" cy="${H*.33}" r="8" fill="#ff4d4d" opacity=".2"/>`;s+=`<rect x="170" y="${H*.55}" width="30" height="${H*.45}" rx="4" fill="#d8dbe3"/><path d="M165 ${H*.55} q20 -18 40 0z" fill="#e8ebf2"/>`}
+ return `url("data:image/svg+xml,${encodeURIComponent(svgW(W,H,s))}")`;
+}
+
+/* ---------- truck art ---------- */
+const TCOL=['#e63946','#f4a261','#2a9d8f','#3d7cc9','#e76f51','#7b4fbf','#f2c94c','#d62828','#e5e7eb','#2a1650'];
+function wheel(x,glow){return `<g class="wh" style="transform-origin:${x}px 50px"><circle cx="${x}" cy="50" r="9" fill="#1a1a1a"/><circle cx="${x}" cy="50" r="4.2" fill="${glow||'#b8bec9'}"/><rect x="${x-.8}" y="42.5" width="1.6" height="15" fill="#444"/></g>`}
+function beam(x,y){return `<path class="beam" d="M${x} ${y} L${x+120} ${y-14} L${x+120} ${y+18}Z" fill="url(#bm)"/>`}
+const DEFS=`<defs><linearGradient id="bm" x1="0" x2="1"><stop offset="0" stop-color="#fff6b0" stop-opacity=".7"/><stop offset="1" stop-color="#fff6b0" stop-opacity="0"/></linearGradient><linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6fa"/><stop offset=".5" stop-color="#aab2bf"/><stop offset="1" stop-color="#e3e7ee"/></linearGradient></defs>`;
+function cab(x,col,style){
+ const win=style==='auto'?`<path d="M${x+22} 14 H${x+28} L${x+39} 27 H${x+22}Z" fill="#111"/><rect x="${x+23}" y="20" width="14" height="2" fill="#3ff0ff"/>`:style==='hyper'?`<path d="M${x+18} 15 H${x+30} L${x+40} 27 H${x+18}Z" fill="#ff3fa4" opacity=".7"/>`:`<path d="M${x+24} 14 H${x+28} L${x+38} 26 H${x+24}Z" fill="#9fd6ff"/>`;
+ const body=style==='hyper'?`<path d="M${x} 46 V20 Q${x} 10 ${x+14} 10 H${x+28} Q${x+46} 22 ${x+46} 38 V46Z" fill="${col}"/>`:`<path d="M${x} 46 V18 Q${x} 10 ${x+8} 10 H${x+27} L${x+40} 26 Q${x+45} 28 ${x+45} 34 V46Z" fill="${col}"/>`;
+ return beam(x+44,32)+body+win+`<rect x="${x+4}" y="${style==='hyper'?6:1}" width="4" height="13" rx="1" fill="#9aa1ab"/><rect x="${x+40}" y="40" width="7" height="7" rx="1" fill="#d5d9e0"/><rect x="${x+41}" y="30" width="4" height="4" rx="1" fill="#fff6b0"/><rect x="${x+10}" y="30" width="10" height="2" fill="#0003"/>`;
+}
+function truckSVG(t){
+ const c=TCOL[t];let inner,W;
+ if(t===0){W=104;inner=beam(98,32)+`<path d="M4 46 V30 H50 V14 Q50 12 53 12 H70 L84 28 Q100 29 100 35 V46Z" fill="${c}"/><path d="M55 16 H68 L79 28 H55Z" fill="#9fd6ff"/><rect x="6" y="26" width="42" height="4" fill="#0003"/><rect x="97" y="31" width="4" height="4" fill="#fff6b0"/><rect x="10" y="20" width="16" height="10" rx="2" fill="#a0703f"/><rect x="28" y="22" width="14" height="8" rx="2" fill="#c48a4c"/>`+wheel(24)+wheel(80);}
+ else if(t===1){W=104;inner=beam(98,32)+`<rect x="4" y="6" width="62" height="40" rx="3" fill="#f1f1f1"/><rect x="4" y="30" width="62" height="5" fill="${c}"/><text x="35" y="24" font-family="Impact,Arial Black,sans-serif" font-size="9" text-anchor="middle" fill="${c}">HAUL</text><path d="M66 46 V18 H82 L96 31 Q100 32 100 37 V46Z" fill="${c}"/><path d="M70 21 H81 L91 31 H70Z" fill="#9fd6ff"/><rect x="96" y="33" width="4" height="4" fill="#fff6b0"/>`+wheel(22)+wheel(84);}
+ else{
+  const L=t===7?150:t===9?108:100;W=L+52;const cx=L+6;let tr='',xw='';
+  if(t===2||t===8){const sc=t===8?'#3ff0ff':c;tr=`<rect x="2" y="4" width="${L}" height="37" rx="2" fill="${t===8?'#f4f6fa':'#e9ecf1'}"/><rect x="2" y="30" width="${L}" height="4" fill="${sc}"/><text x="${L/2+2}" y="23" font-family="Impact,Arial Black,sans-serif" font-size="11" text-anchor="middle" fill="${t===8?'#1b1b29':c}">${t===8?'AUTOFREIGHT':'HAUL EMPIRE'}</text>`}
+  else if(t===3){tr=`<rect x="2" y="4" width="${L}" height="37" rx="2" fill="#f7f9fc"/><rect x="${L-8}" y="8" width="10" height="22" rx="2" fill="#cfd5de"/><rect x="${L-6}" y="11" width="6" height="2" fill="#888"/><rect x="${L-6}" y="15" width="6" height="2" fill="#888"/><text x="${L/2-4}" y="25" font-family="Impact,Arial Black,sans-serif" font-size="11" text-anchor="middle" fill="${c}">❄ FRESH</text>`}
+  else if(t===4){tr=`<rect x="2" y="39" width="${L}" height="4" fill="#333"/><rect x="2" y="9" width="${L}" height="30" rx="15" fill="url(#chrome)"/><path d="M${L/2-6} 24 l6 -6 l6 6 l-6 6z" fill="#e63946"/><rect x="10" y="5" width="${L-16}" height="3" rx="1" fill="#8a929e"/>`}
+  else if(t===5){tr=`<rect x="2" y="40" width="${L}" height="3" fill="#555"/><rect x="2" y="22" width="${L}" height="2.5" fill="#666"/><rect x="2" y="4" width="3" height="39" fill="#666"/><rect x="${L-1}" y="4" width="3" height="39" fill="#666"/><rect x="${L/2}" y="4" width="2.5" height="39" fill="#666"/>`;
+   const cc=['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#f97316'];[[8,8],[54,8],[8,26],[54,26]].forEach(([x,y],k)=>{tr+=`<path d="M${x} ${y+12} V${y+6} Q${x} ${y+3} ${x+6} ${y+3} L${x+14} ${y} H${x+28} L${x+36} ${y+5} Q${x+40} ${y+6} ${x+40} ${y+9} V${y+12}Z" fill="${cc[k]}"/><rect x="${x+16}" y="${y+2}" width="10" height="4" fill="#9fd6ff"/>`})}
+  else if(t===6){tr=`<rect x="2" y="36" width="${L}" height="6" fill="#333"/><rect x="10" y="12" width="56" height="24" rx="3" fill="#f2b705"/><rect x="18" y="16" width="20" height="12" fill="#9fd6ff"/><path d="M60 16 L86 2 L94 8 L72 22Z" fill="#f2b705"/><path d="M90 6 L96 26 L86 26Z" fill="#555"/><rect x="8" y="30" width="62" height="6" rx="3" fill="#222"/><path d="M2 36 h${L}" stroke="#ff7a1a" stroke-width="2" stroke-dasharray="6 6"/>`}
+  else if(t===7){const h=L/2-3;tr=`<rect x="2" y="4" width="${h}" height="37" rx="2" fill="#e9ecf1"/><rect x="${h+6}" y="4" width="${h}" height="37" rx="2" fill="#e9ecf1"/><rect x="2" y="30" width="${L}" height="4" fill="${c}"/><rect x="${h+2}" y="38" width="4" height="4" fill="#333"/><text x="${h/2+2}" y="23" font-family="Impact,Arial Black,sans-serif" font-size="10" text-anchor="middle" fill="${c}">ROAD</text><text x="${h*1.5+6}" y="23" font-family="Impact,Arial Black,sans-serif" font-size="10" text-anchor="middle" fill="${c}">TRAIN</text>`;xw=wheel(h-14)+wheel(h+20)}
+  else if(t===9){tr=`<rect x="2" y="8" width="${L}" height="33" rx="16" fill="#1f1235"/><rect x="10" y="22" width="${L-16}" height="3" rx="1.5" fill="#ff3fa4"/><rect x="10" y="22" width="${L-16}" height="3" rx="1.5" fill="#ff3fa4" opacity=".5" style="filter:blur(2px)"/><circle cx="${L-12}" cy="16" r="3" fill="#3ff0ff"/>`}
+  const g=t===9?'#ff3fa4':t===8?'#3ff0ff':null;
+  inner=`<rect x="2" y="43" width="${L+48}" height="4" fill="#2b2b2b"/>`+tr+cab(cx,c==='#e5e7eb'?'#d9dde4':c,t===8?'auto':t===9?'hyper':'')+wheel(16,g)+wheel(35,g)+xw+wheel(cx+15,g)+wheel(cx+37,g);
+ }
+ return `<svg viewBox="0 0 ${W} 62" xmlns="http://www.w3.org/2000/svg">${DEFS}${inner}</svg>`;
+}
+function carSVG(col){return `<svg viewBox="0 0 64 30" xmlns="http://www.w3.org/2000/svg"><path d="M2 22 V16 Q2 12 8 12 L18 4 H40 L50 12 Q62 12 62 18 V22Z" fill="${col}"/><path d="M21 7 H31 V12 H15Z M34 7 H39 L46 12 H34Z" fill="#9fd6ff"/><rect x="58" y="15" width="4" height="3" fill="#fff6b0"/><circle cx="15" cy="23" r="6" fill="#1a1a1a"/><circle cx="49" cy="23" r="6" fill="#1a1a1a"/><circle cx="15" cy="23" r="2.5" fill="#aaa"/><circle cx="49" cy="23" r="2.5" fill="#aaa"/></svg>`}
+
+/* ---------- elements ---------- */
+const scene=$('#scene'),fx=$('#fx'),truckEl=$('#truck'),truckWrap=$('#truckWrap'),panel=$('#panel');
+const els={cash:$('#cash'),rate:$('#rate'),dBar:$('#dBar'),dLabel:$('#dLabel'),dPay:$('#dPay'),tapVal:$('#tapVal'),combo:$('#combo'),cBar:$('#cBar'),far:$('#far'),mid:$('#mid'),near:$('#near'),dash:$('#dash'),sun:$('#sun'),stars:$('#stars'),night:$('#night'),boosts:$('#boosts'),routeTag:$('#routeTag'),shareTag:$('#shareTag'),hint:$('#hint'),traffic:$('#traffic'),banner:$('#banner')};
+let curTheme=-1,curTier=-1;
+function applyTheme(){
+ if(curTheme===S.route)return;curTheme=S.route;const th=THEMES[S.route];
+ scene.style.setProperty('--s0',th.sky[0]);scene.style.setProperty('--s1',th.sky[1]);scene.style.setProperty('--gr',th.gr);scene.style.setProperty('--road',th.road);scene.style.setProperty('--line2',th.line);
+ els.far.style.backgroundImage=genLayer(th.far,'far',11+S.route);els.mid.style.backgroundImage=genLayer(th.mid,'mid',23+S.route);els.near.style.backgroundImage=genLayer(th.near,'near',37+S.route);
+ $('#planet').style.display=th.space?'block':'none';
+ els.traffic.innerHTML='';cars.length=0;
+}
+function truckTier(){let t=0;for(let i=0;i<FLEET.length;i++)if(S.fleet[i]>0)t=i;return t}
+function applyTruck(announce){const t=truckTier();if(t===curTier)return;const up=curTier>=0&&t>curTier;curTier=t;truckEl.innerHTML=truckSVG(t);lastWs=0;if(up&&announce)toast(`🚛 Your lead rig is now a ${FLEET[t].name}!`,'blue')}
+
+/* ---------- fx ---------- */
+function floater(x,y,txt,cls){if(fx.childElementCount>40)return;const d=document.createElement('div');d.className='float '+(cls||'');d.textContent=txt;d.style.left=x+'px';d.style.top=y+'px';d.addEventListener('animationend',()=>d.remove());fx.appendChild(d)}
+function truckBox(){const s=scene.getBoundingClientRect(),t=truckWrap.getBoundingClientRect();return{x:t.left-s.left,y:t.top-s.top,w:t.width,h:t.height}}
+function puff(){if(fx.childElementCount>40)return;const b=truckBox();const d=document.createElement('div');d.className='puff';d.style.left=(b.x+b.w-b.h*.85)+'px';d.style.top=(b.y-4)+'px';d.addEventListener('animationend',()=>d.remove());fx.appendChild(d)}
+function confetti(x,y,n){const cs=['#ffb020','#4ade80','#60a5fa','#f472b6','#facc15','#fff'];for(let i=0;i<n;i++){const d=document.createElement('div');d.className='conf';d.style.left=x+'px';d.style.top=y+'px';d.style.background=cs[i%cs.length];const a=Math.random()*Math.PI*2,r=50+Math.random()*90;d.style.setProperty('--dx',Math.cos(a)*r+'px');d.style.setProperty('--dy',(Math.sin(a)*r-30)+'px');d.style.setProperty('--r',(Math.random()*720-360)+'deg');d.addEventListener('animationend',()=>d.remove());fx.appendChild(d)}}
+function banner(t,s){els.banner.querySelector('.t').textContent=t;els.banner.querySelector('.s').textContent=s;els.banner.classList.remove('show');void els.banner.offsetWidth;els.banner.classList.add('show')}
+function toast(msg,cls){const d=document.createElement('div');d.className='toast '+(cls||'');d.textContent=msg;const box=$('#toasts');box.appendChild(d);while(box.childElementCount>3)box.firstChild.remove();setTimeout(()=>d.remove(),3000)}
+function modal(html,buttons){const m=$('#modal'),b=$('#mbox');b.innerHTML=html+`<div class="row2">${buttons.map((x,i)=>`<button class="btn ${x.cls||'ok'}" data-mb="${i}">${x.label}</button>`).join('')}</div>`;m.hidden=false;
+ b.querySelectorAll('[data-mb]').forEach(el=>el.onclick=()=>{m.hidden=true;const f=buttons[+el.dataset.mb].fn;f&&f()})}
+
+/* ---------- tapping ---------- */
+let combo=0,lastTap=0,tapKick=0,autoFloatT=0;
+const comboMult=()=>1+(D.comboCap-1)*Math.min(combo,100)/100;
+const need=()=>20+S.route*5;
+function doTap(x,y,manual){
+ const v=D.baseTap*(manual?comboMult():1);earn(v);
+ if(manual){S.taps++;combo=Math.min(100,combo+2.2);lastTap=performance.now();if(combo>S.maxCombo)S.maxCombo=combo;tapKick=Math.min(tapKick+28,260);
+  floater(x,y,'+'+money(v));puff();SFX.tap();buzz(6);
+  truckEl.animate([{transform:'translateY(0)'},{transform:'translateY(-4px) scale(1.03)'},{transform:'translateY(0)'}],{duration:150});
+  if(S.taps===12)els.hint.remove();}
+ else{const t=performance.now();if(t-autoFloatT>350){autoFloatT=t;const b=truckBox();floater(b.x+b.w*.6,b.y,'+'+money(v),'sm')}}
+ S.prog++;if(S.prog>=need())deliver();
+}
+function deliver(){
+ S.prog=0;S.deliveries++;const v=D.baseTap*30*comboMult()+D.income*5;earn(v);
+ const b=truckBox();banner('DELIVERED!','+'+money(v));confetti(b.x+b.w*.7,b.y+b.h*.3,16);SFX.horn();buzz([10,40,20]);
+}
+scene.addEventListener('pointerdown',e=>{if(e.target.closest('.gold'))return;e.preventDefault();const r=scene.getBoundingClientRect();doTap(e.clientX-r.left,e.clientY-r.top,true)});
+scene.addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ---------- rush orders ---------- */
+let goldEl=null,nextGold=performance.now()+20000;
+function scheduleGold(){nextGold=performance.now()+(30000+Math.random()*40000)*(D.broker?.5:1)}
+function spawnGold(){
+ const g=document.createElement('div');g.className='gold';g.textContent='📦';g.style.left=(8+Math.random()*70)+'%';g.style.top=(6+Math.random()*30)+'%';
+ g.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();collectGold(g)});
+ scene.appendChild(g);goldEl=g;
+ const life=D.broker?16000:10000;setTimeout(()=>{if(goldEl===g){g.remove();goldEl=null;scheduleGold()}},life);
+}
+function collectGold(g){
+ if(goldEl!==g)return;goldEl=null;S.goldens++;g.classList.add('out');setTimeout(()=>g.remove(),350);
+ const r=Math.random(),now=Date.now(),sr=scene.getBoundingClientRect(),gr=g.getBoundingClientRect(),x=gr.left-sr.left+gr.width/2,y=gr.top-sr.top+gr.height/2;
+ confetti(x,y,22);SFX.gold();buzz([15,30,15]);
+ if(r<.5||D.income<1){const v=Math.max(D.income*120,D.baseTap*100);earn(v);banner('RUSH ORDER!','+'+money(v));toast(`📦 Rush order paid ${money(v)}!`,'gt')}
+ else if(r<.8){S.boosts.push({k:'tail',m:3,until:now+30000});banner('TAILWIND!','×3 income for 30s');toast('🌬️ Tailwind! ×3 income for 30 seconds','gt')}
+ else{S.boosts.push({k:'nitro',m:10,until:now+20000});banner('NITRO!','×10 tap value for 20s');toast('🔥 Nitro! ×10 tap value for 20 seconds — tap fast!','gt')}
+ scheduleGold();
+}
+
+/* ---------- purchases ---------- */
+const costN=(i,n)=>FLEET[i].base*Math.pow(1.15,S.fleet[i])*(Math.pow(1.15,n)-1)/.15;
+function maxN(i){const c0=FLEET[i].base*Math.pow(1.15,S.fleet[i]);if(S.cash<c0)return 0;return Math.floor(Math.log(S.cash*.15/c0+1)/Math.log(1.15))}
+const buyCount=i=>S.buyAmt==='max'?Math.max(1,maxN(i)):S.buyAmt;
+function fail(btn){SFX.err();if(btn){btn.classList.remove('shake');void btn.offsetWidth;btn.classList.add('shake')}}
+function buyFleet(i,btn){
+ const n=buyCount(i),c=costN(i,n);if(S.cash<c)return fail(btn);
+ const before=milestones(S.fleet[i]);S.cash-=c;S.fleet[i]+=n;SFX.buy();buzz(8);
+ if(S.fleet[i]===n&&n>0&&i>0)toast(`🎉 New vehicle: ${FLEET[i].name}!`,'blue');
+ if(milestones(S.fleet[i])>before){toast(`⭐ ${S.fleet[i]} ${FLEET[i].name}s — output ×2!`,'ach');SFX.big()}
+ calc();applyTruck(true);render(true);
+}
+function buyUp(id,btn){const u=UPS.find(x=>x.id===id);if(!u||S.ups[id])return;if(S.cash<u.cost)return fail(btn);S.cash-=u.cost;S.ups[id]=1;SFX.buy();buzz(8);toast(`${u.ic} ${u.name}: ${u.desc}`);calc();render(true)}
+function buyRoute(i,btn){if(i!==S.route+1)return;const r=ROUTES[i];if(S.cash<r.cost)return fail(btn);S.cash-=r.cost;S.route=i;S.prog=0;SFX.big();buzz([20,40,20]);applyTheme();banner('NEW ROUTE!',`${r.icon} ${r.name} · ×${r.mult} income`);confetti(scene.clientWidth/2,scene.clientHeight*.4,30);calc();render(true)}
+function doIPO(){
+ const p=pendingShares();if(p<1)return;
+ modal(`<div class="em">🔔</div><h2>Go Public?</h2><p>Sell your fleet, upgrades, routes and cash to Wall Street. In return you keep <b>${p} new shares</b> forever.</p><p>Total bonus after IPO: <b>+${(S.shares+p)*2}%</b> income &amp; tap value.</p>`,
+ [{label:'Not yet',cls:'ghost'},{label:'Ring the bell',fn:()=>{const keep=S.shares+p;Object.assign(S,runState());S.shares=keep;S.ipos++;combo=0;calc();applyTheme();applyTruck(false);render(true);save();banner('IPO!',`${keep} shares · +${keep*2}% forever`);SFX.big();confetti(scene.clientWidth/2,scene.clientHeight*.4,40)}}]);
+}
+
+/* ---------- panel ---------- */
+let tab='fleet',panelKey='';
+function visFleet(){const o=[];for(let i=0;i<FLEET.length;i++){if(i===0||S.fleet[i]>0||S.fleet[i-1]>0||S.runEarn>=FLEET[i].base*.3)o.push(i);else break}return o}
+function visUps(){return UPS.filter(u=>!S.ups[u.id]&&('f' in u.e?S.fleet[u.e.f]>=u.need:S.runEarn>=u.cost*.25||S.cash>=u.cost*.5)).sort((a,b)=>a.cost-b.cost).slice(0,40)}
+function structKey(){if(tab==='fleet')return 'f'+visFleet().length+S.buyAmt;if(tab==='upgrades')return 'u'+visUps().map(u=>u.id).join();if(tab==='routes')return 'r'+S.route;return 'e'+D.achN+(pendingShares()>0)+S.sound+S.haptic+S.shares}
+function build(){
+ let h='';
+ if(tab==='fleet'){
+  h=`<div class="buybar"><span>BUY</span>${[1,10,25,'max'].map(a=>`<button class="seg ${S.buyAmt===a?'on':''}" data-amt="${a}">${a==='max'?'MAX':'×'+a}</button>`).join('')}</div>`;
+  const v=visFleet();
+  for(const i of v){const f=FLEET[i];h+=`<div class="card" data-fi="${i}"><div class="ic">${f.icon}</div><div class="info"><div class="nm">${f.name}<span class="own" data-own>0</span></div><div class="sub" data-sub></div><div class="ms"><i data-msb></i></div></div><button class="buy" data-buy="${i}"><small data-q></small><b data-c></b></button></div>`}
+  if(v.length<FLEET.length){const f=FLEET[v.length];h+=`<div class="card mystery"><div class="ic">${f.icon}</div><div class="info"><div class="nm">??? Locked</div><div class="sub">Earn ${money(f.base*.3)} this run to reveal</div></div></div>`}
+ }else if(tab==='upgrades'){
+  const v=visUps();const owned=Object.keys(S.ups).length;
+  h=`<div class="sect">Available · ${owned} owned</div>`;
+  if(!v.length)h+=`<div class="empty">🔧 Nothing in the shop right now.<br>Keep hauling and buying trucks — new upgrades unlock as your empire grows.</div>`;
+  for(const u of v)h+=`<div class="card" data-ui="${u.id}"><div class="ic">${u.ic}</div><div class="info"><div class="nm">${u.name}</div><div class="sub">${u.desc}</div></div><button class="buy" data-up="${u.id}"><small>Buy</small><b>${money(u.cost)}</b></button></div>`;
+ }else if(tab==='routes'){
+  h=`<div class="sect">Routes · each one multiplies all income</div>`;
+  ROUTES.forEach((r,i)=>{const cur=i===S.route,own=i<=S.route,next=i===S.route+1;
+   h+=`<div class="card route ${cur?'cur':''} ${!own&&!next?'locked':''}"><div class="ic">${r.icon}</div><div class="info"><div class="nm">${r.name}</div><div class="sub">×${r.mult} income · ${r.desc}</div></div>${own?`<button class="buy done"><small>${cur?'Driving':'Done'}</small><b>${cur?'📍':'✓'}</b></button>`:`<button class="buy" ${next?`data-route="${i}"`:''}><small>${next?'Unlock':'Locked'}</small><b>${money(r.cost)}</b></button>`}</div>`});
+ }else{
+  h=`<div class="ipo"><h3>📈 Go Public</h3><p>Shares held: <b data-e="sh"></b> · bonus <b data-e="shb"></b></p><p>Shares from an IPO now:</p><div class="big" data-e="pend"></div><p data-e="nxt"></p><button class="btn" data-act="ipo" data-e="ipob">Ring the bell</button></div>`;
+  h+=`<div class="sect">Achievements · <span data-e="achc"></span> (+1% income each)</div><div class="achs">${ACH.map((a,i)=>`<div class="ach ${S.ach[i]?'got':''}"><div class="ai">${a[0]}</div><b>${a[1]}</b>${a[2]}</div>`).join('')}</div>`;
+  h+=`<div class="sect">Stats</div><div class="stats">${[['Earned this run','re'],['Earned all time','ae'],['Deliveries','dl'],['Taps','tp'],['Vehicles','vh'],['Rush orders caught','go'],['IPOs','ip'],['Best combo','bc'],['Playing for','pf']].map(([l,k])=>`<div><span>${l}</span><b data-e="${k}"></b></div>`).join('')}</div>`;
+  h+=`<div class="sect">Settings</div><div class="row2"><button class="btn ghost" data-act="sound">${S.sound?'🔊 Sound on':'🔇 Sound off'}</button><button class="btn ghost" data-act="haptic">${S.haptic?'📳 Haptics on':'📴 Haptics off'}</button></div><button class="btn danger" data-act="reset">Reset all progress</button><p style="text-align:center;color:var(--mut);font-size:11px;margin-top:14px">Haul Empire · progress saves automatically on this device</p>`;
+ }
+ panel.innerHTML=h;
+}
+function update(){
+ if(tab==='fleet'){panel.querySelectorAll('[data-fi]').forEach(card=>{const i=+card.dataset.fi,own=S.fleet[i],n=buyCount(i),c=costN(i,n);
+  card.querySelector('[data-own]').textContent=own;
+  const nm=nextMile(own),pm=prevMile(own);
+  card.querySelector('[data-sub]').innerHTML=`${money(D.unit[i])}/s each${own?` · <b>${money(D.unit[i]*own*D.tail)}/s</b>`:''}<br>Next ×2 at ${nm}`;
+  card.querySelector('[data-msb]').style.width=((own-pm)/(nm-pm)*100)+'%';
+  card.querySelector('[data-q]').textContent='×'+n;card.querySelector('[data-c]').textContent=money(c);
+  card.querySelector('.buy').classList.toggle('ok',S.cash>=c)})}
+ else if(tab==='upgrades'){panel.querySelectorAll('[data-ui]').forEach(card=>{const u=UPS.find(x=>x.id===card.dataset.ui);card.querySelector('.buy').classList.toggle('ok',S.cash>=u.cost)})}
+ else if(tab==='routes'){const b=panel.querySelector('[data-route]');if(b)b.classList.toggle('ok',S.cash>=ROUTES[+b.dataset.route].cost)}
+ else{const p=pendingShares(),q=k=>panel.querySelector(`[data-e="${k}"]`),set=(k,v)=>{const e=q(k);if(e)e.textContent=v};
+  set('sh',S.shares);set('shb','+'+S.shares*2+'%');set('pend',p>0?`+${p} shares (+${p*2}%)`:'0 shares');
+  const tot=totalSharesFor(S.allEarn);set('nxt',`Next share at ${money(Math.pow(tot+1,2)*1e7)} earned all time (now ${money(S.allEarn)})`);
+  const ib=q('ipob');if(ib){ib.classList.toggle('ok',p>0);ib.textContent=p>0?`Ring the bell · +${p} shares`:'Need more lifetime earnings'}
+  set('achc',`${D.achN}/${ACH.length}`);set('re',money(S.runEarn));set('ae',money(S.allEarn));set('dl',fmt(S.deliveries));set('tp',fmt(S.taps));set('vh',fmt(fleetTotal()));set('go',S.goldens);set('ip',S.ipos);set('bc','×'+(1+(D.comboCap-1)*Math.min(S.maxCombo,100)/100).toFixed(2));set('pf',dur((Date.now()-S.started)/1000))}
+}
+function render(force){const k=structKey();if(force||k!==panelKey){panelKey=k;build()}update()}
+panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.amt){S.buyAmt=b.dataset.amt==='max'?'max':+b.dataset.amt;render(true)}
+ else if(b.dataset.buy!=null)buyFleet(+b.dataset.buy,b);
+ else if(b.dataset.up)buyUp(b.dataset.up,b);
+ else if(b.dataset.route!=null)buyRoute(+b.dataset.route,b);
+ else if(b.dataset.act==='ipo')doIPO();
+ else if(b.dataset.act==='sound'){S.sound=!S.sound;render(true);SFX.buy()}
+ else if(b.dataset.act==='haptic'){S.haptic=!S.haptic;render(true);buzz(20)}
+ else if(b.dataset.act==='reset')modal(`<div class="em">⚠️</div><h2>Reset everything?</h2><p>This wipes your trucks, shares and achievements. There's no undo.</p>`,[{label:'Cancel',cls:'ghost'},{label:'Reset',cls:'danger',fn:()=>{localStorage.removeItem(KEY);location.reload()}}]);
+});
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.tab;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));panel.scrollTop=0;render(true)}));
+function dots(){const d=document.querySelectorAll('#tabs .dot');
+ d[0].classList.toggle('show',visFleet().some(i=>S.cash>=costN(i,1)));
+ d[1].classList.toggle('show',visUps().some(u=>S.cash>=u.cost));
+ d[2].classList.toggle('show',S.route<ROUTES.length-1&&S.cash>=ROUTES[S.route+1].cost);
+ const p=pendingShares();d[3].classList.toggle('show',p>=Math.max(1,S.shares))}
+function checkAch(){ACH.forEach((a,i)=>{if(!S.ach[i]&&a[3]()){S.ach[i]=1;toast(`🏆 ${a[1]} — +1% income`,'ach');SFX.gold()}})}
+
+/* ---------- scene loop ---------- */
+let off=0,speed=80,lastWs=0;const cars=[];let nextCar=0;
+const CARC=['#ef4444','#3b82f6','#22c55e','#eab308','#f8fafc','#a855f7','#111827','#f97316'];
+function animScene(dt,t){
+ const target=60+22*Math.log10(1+D.income)+combo*1.3;speed+=(target+tapKick-speed)*Math.min(1,dt*4);tapKick*=Math.pow(.08,dt);
+ off=(off+speed*dt)%1e7;
+ els.far.style.backgroundPositionX=(-off*.06).toFixed(1)+'px';els.mid.style.backgroundPositionX=(-off*.2).toFixed(1)+'px';els.near.style.backgroundPositionX=(-off*.55).toFixed(1)+'px';els.dash.style.backgroundPositionX=(-off).toFixed(1)+'px';
+ const ws=Math.max(.06,Math.min(1,34/speed));if(Math.abs(ws-lastWs)/ws>.15){lastWs=ws;truckEl.style.setProperty('--ws',ws.toFixed(2)+'s')}
+ const th=THEMES[S.route];let n;
+ if(th.night){n=1;els.night.style.opacity=0;els.sun.style.opacity=0}
+ else{const cyc=(Date.now()/1000%300)/300,day=.5+.5*Math.cos(2*Math.PI*cyc);n=Math.max(0,Math.min(1,(.3-day)/.25));els.night.style.opacity=(n*.55).toFixed(2);
+  const W=scene.clientWidth,H=scene.clientHeight,a=cyc*2*Math.PI;els.sun.style.opacity=Math.max(0,Math.min(1,day*2-.4)).toFixed(2);els.sun.style.left=(W*.5+Math.sin(a)*W*.42-22)+'px';els.sun.style.top=(H*.08+(1-day)*H*.4)+'px'}
+ els.stars.style.opacity=n.toFixed(2);scene.style.setProperty('--n',n.toFixed(2));truckWrap.style.setProperty('--n',n.toFixed(2));
+ if(!th.space&&t>nextCar){nextCar=t+1800+Math.random()*4500;const c=document.createElement('div');c.className='car';c.innerHTML=carSVG(CARC[Math.random()*CARC.length|0]);els.traffic.appendChild(c);cars.push({el:c,x:scene.clientWidth+20,v:120+Math.random()*80})}
+ for(let i=cars.length-1;i>=0;i--){const c=cars[i];c.x-=(c.v+speed)*dt;c.el.style.left=c.x.toFixed(1)+'px';if(c.x<-90){c.el.remove();cars.splice(i,1)}}
+}
+
+/* ---------- main loop ---------- */
+let lastT=performance.now(),uiAcc=1,achAcc=0,saveAcc=0,autoAcc=0,lastCash='',lastRate='',boostAcc=0;
+function frame(t){
+ const real=Math.max(0,Math.min((t-lastT)/1000,8*3600)),dt=Math.min(real,.1);lastT=t;
+ calc();
+ earn(D.income*real);
+ if(D.auto){autoAcc+=D.auto*Math.min(real,1);while(autoAcc>=1){autoAcc--;doTap(0,0,false)}}
+ if(t-lastTap>450)combo=Math.max(0,combo-(combo>60?45:30)*dt);
+ if(!goldEl&&t>nextGold)spawnGold();
+ animScene(dt,t);
+ const cs=money(S.cash);if(cs!==lastCash){els.cash.textContent=cs;lastCash=cs}
+ const rs=`<b>${money(D.income)}</b> /sec${D.tail>1?' 🌬️':''}`;if(rs!==lastRate){els.rate.innerHTML=rs;lastRate=rs}
+ const nd=need();els.dBar.style.width=(S.prog/nd*100)+'%';
+ boostAcc+=dt;
+ if(boostAcc>.15){boostAcc=0;
+  els.dLabel.textContent=`📦 Delivery #${fmt(S.deliveries+1)} · ${S.prog}/${nd}`;
+  els.dPay.textContent='+'+money(D.baseTap*30*comboMult()+D.income*5);
+  els.tapVal.textContent=`${money(D.baseTap*comboMult())} / tap${D.auto?` · 🤖 ${D.auto}/s`:''}`;
+  const cm=comboMult();els.combo.textContent=`Combo ×${cm.toFixed(2)}`;els.combo.classList.toggle('hot',combo>=99);els.cBar.style.width=Math.min(combo,100)+'%';
+  const now=Date.now();els.boosts.innerHTML=S.boosts.map(b=>`<div class="chip ${b.k}">${b.k==='tail'?'🌬️ ×'+b.m+' income':'🔥 ×'+b.m+' taps'} ${Math.ceil((b.until-now)/1000)}s</div>`).join('');
+  els.routeTag.textContent=`${ROUTES[S.route].icon} ${ROUTES[S.route].name} ×${ROUTES[S.route].mult}`;
+  els.shareTag.hidden=!S.shares;els.shareTag.textContent=`📈 ${S.shares} shares`;
+ }
+ uiAcc+=dt;if(uiAcc>.2){uiAcc=0;render();dots()}
+ achAcc+=dt;if(achAcc>1){achAcc=0;checkAch()}
+ saveAcc+=dt;if(saveAcc>5){saveAcc=0;save()}
+ requestAnimationFrame(frame);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+window.addEventListener('pagehide',save);
+
+/* ---------- boot ---------- */
+const had=load();
+calc();applyTheme();applyTruck(false);render(true);
+if(S.taps>=12)els.hint.remove();
+if(had){const away=Math.min((Date.now()-S.last)/1000,8*3600);
+ if(away>30&&D.income>0){const g=D.income*away*D.offline;earn(g);
+  modal(`<div class="em">🌙</div><h2>Welcome back!</h2><p>Your drivers kept hauling for ${dur(away)}${D.offline<1?' (50% offline rate)':''}.</p><div class="money">+${money(g)}</div>`,[{label:'Collect',fn:()=>{SFX.horn()}}])}}
+else modal(`<div class="em">🚚</div><h2>Haul Empire</h2><p>You've got one beat-up pickup and a dream.</p><p>👆 <b>Tap the road</b> to drive deliveries — tap fast for combos.<br>🚛 <b>Buy trucks</b> that haul while you're away.<br>📦 <b>Catch rush orders</b> for big bonuses.<br>🗺️ <b>Unlock routes</b> from Main Street to the Moon.</p>`,[{label:"Let's roll",fn:()=>{ac();SFX.horn()}}]);
+requestAnimationFrame(t=>{lastT=t;requestAnimationFrame(frame)});
+</script>
+</body>
+</html>
