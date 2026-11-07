@@ -29,7 +29,7 @@ const ROUTES=[
  {name:'Asteroid Belt',icon:'☄️',desc:'Mining freight through a field of floating rock.'},
  {name:'Galactic Ring',icon:'🌌',desc:'The final frontier of freight.'},
 ];
-const RG={val:2.5,cap:30,c0:20,cdiv:300,costs:[0,2e4,3e7,1e11,1e15,1e20,1e26,1e33,1e41,1e50]};
+const RG={val:2.5,cap:30,c0:20,cdiv:300,costs:[0,2e4,3e7,1e11,1e15,1e20,1e26,1e33,1e39,1e46]};
 ROUTES.forEach((R,r)=>{R.val=Math.pow(RG.val,r);R.mult=R.val;R.cap=Math.pow(RG.cap,r);R.cost=RG.costs[r]*PACE.k;R.c0=Math.max(RG.c0*PACE.k,R.cost/RG.cdiv)});
 const UPS=[];
 const T=(id,cost,ic,name,desc,e)=>UPS.push({id,cost,ic,name,desc,e});
