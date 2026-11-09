@@ -15,43 +15,47 @@ const FLEET=[
  {name:'Orbital Lifter',icon:'🛰️',base:1.4e13,rate:8e7},
  {name:'Warp Courier',icon:'🌀',base:1.7e14,rate:4.4e8},
 ];
-const MILES=[10,25,50,100,150,200,250,300,400,500,600,700,800,900,1000,1250,1500,1750,2000,2500,3000];
+const MILES=[25,50,100,150,200,250,300,400,500,600,700,800,900,1000,1250,1500,1750,2000,2500,3000];
+const PACE={k:1,vg:1.2,fu:40};
 const ROUTES=[
- {name:'Local Runs',icon:'🏘️',cost:0,mult:1,desc:'Groceries, furniture and garage-sale finds.'},
- {name:'Farm Country',icon:'🌾',cost:2.5e4,mult:1.5,desc:'Grain, feed and fresh produce.'},
- {name:'Mountain Pass',icon:'🏔️',cost:3e6,mult:2.5,desc:'Steep grades, big paydays.'},
- {name:'Desert Express',icon:'🌵',cost:5e8,mult:4,desc:'Long, hot hauls across the badlands.'},
- {name:'Ice Road',icon:'❄️',cost:1e11,mult:7,desc:'Frozen lakes. Hazard pay included.'},
- {name:'Neon Megacity',icon:'🌃',cost:3e13,mult:12,desc:'Round-the-clock deliveries in the city that never sleeps.'},
- {name:'Lunar Haul',icon:'🌕',cost:1e16,mult:25,desc:'Low gravity, astronomical rates.'},
- {name:'Mars Colony',icon:'🔴',cost:5e19,mult:60,desc:'Supply runs for the red-planet settlers.'},
- {name:'Asteroid Belt',icon:'☄️',cost:2e23,mult:150,desc:'Mining freight through a field of floating rock.'},
- {name:'Galactic Ring',icon:'🌌',cost:1e28,mult:400,desc:'The final frontier of freight.'},
+ {name:'Local Runs',icon:'🏘️',desc:'Groceries, furniture and garage-sale finds.'},
+ {name:'Farm Country',icon:'🌾',desc:'Grain, feed and fresh produce.'},
+ {name:'Mountain Pass',icon:'🏔️',desc:'Steep grades, big paydays.'},
+ {name:'Desert Express',icon:'🌵',desc:'Long, hot hauls across the badlands.'},
+ {name:'Ice Road',icon:'❄️',desc:'Frozen lakes. Hazard pay included.'},
+ {name:'Neon Megacity',icon:'🌃',desc:'Round-the-clock deliveries in the city that never sleeps.'},
+ {name:'Lunar Haul',icon:'🌕',desc:'Low gravity, astronomical rates.'},
+ {name:'Mars Colony',icon:'🔴',desc:'Supply runs for the red-planet settlers.'},
+ {name:'Asteroid Belt',icon:'☄️',desc:'Mining freight through a field of floating rock.'},
+ {name:'Galactic Ring',icon:'🌌',desc:'The final frontier of freight.'},
 ];
+const RG={val:2.5,cap:30,c0:20,cdiv:300,costs:[0,2e4,3e7,1e11,1e15,1e20,1e26,1e33,1e39,1e46]};
+ROUTES.forEach((R,r)=>{R.val=Math.pow(RG.val,r);R.mult=R.val;R.cap=Math.pow(RG.cap,r);R.cost=RG.costs[r]*PACE.k;R.c0=Math.max(RG.c0*PACE.k,R.cost/RG.cdiv)});
 const UPS=[];
 const T=(id,cost,ic,name,desc,e)=>UPS.push({id,cost,ic,name,desc,e});
 T('tap1',100,'🦶','Lead Foot','Tap value ×2',{tap:2});
 T('tap2',750,'📯','Air Horn','Tap value ×2',{tap:2});
-T('auto1',3000,'🧭','Auto-Dispatch','Your rig drives itself: 2 taps/sec',{auto:2});
+T('auto1',3000,'🧭','Auto-Dispatch','Your rig drives itself: 1 tap/sec',{auto:1});
 T('tap3',1e4,'🛑','Jake Brake','Tap value ×2',{tap:2});
 T('combo1',5e4,'🎵','Rhythm Driving','Combo bonus caps at ×5 instead of ×3',{combo:5});
-T('tap4',1e5,'📻','CB Radio','Each tap also earns 1% of your $/sec',{pct:.01});
-T('broker',3e5,'🤝','Freight Broker','Rush orders show up twice as often and stay longer',{broker:1});
+T('tap4',1e5,'📻','CB Radio','Each tap also earns 0.5% of your $/sec',{pct:.005});
+T('broker',3e5,'🤝','Freight Broker','Rush orders and lane surges come twice as often',{broker:1});
 T('night',2e6,'🌙','Night Shift Crews','Offline earnings 50% → 100%',{off:1});
-T('auto2',5e6,'🛣️','Cruise Control','Auto-drive at 5 taps/sec',{auto:5});
-T('tap5',1e7,'📱','Dispatch App','Taps earn +2% of $/sec',{pct:.02});
+T('auto2',5e6,'🛣️','Cruise Control','Auto-drive at 2 taps/sec',{auto:2});
+T('tap5',1e7,'📱','Dispatch App','Taps earn +0.5% of $/sec',{pct:.005});
 T('combo2',1e8,'🎸','Highway Rock','Combo bonus caps at ×8',{combo:8});
-T('tap6',1e9,'🛰️','Satellite Routing','Taps earn +3% of $/sec',{pct:.03});
-T('auto3',1e10,'🧠','Autopilot','Auto-drive at 10 taps/sec',{auto:10});
-T('tap7',1e12,'⚡','Neural Dispatch','Taps earn +5% of $/sec',{pct:.05});
+T('tap6',1e9,'🛰️','Satellite Routing','Taps earn +1% of $/sec',{pct:.01});
+T('auto3',1e10,'🧠','Autopilot','Auto-drive at 4 taps/sec',{auto:4});
+T('tap7',1e12,'⚡','Neural Dispatch','Taps earn +1% of $/sec',{pct:.01});
 T('combo3',1e14,'🥁','Drum Solo','Combo bonus caps at ×12',{combo:12});
-T('tap8',1e15,'🛸','Quantum Dispatch','Taps earn +8% of $/sec',{pct:.08});
-T('auto4',1e16,'🦾','Robo-Drivers','Auto-drive at 20 taps/sec',{auto:20});
-T('tap9',1e20,'🔮','Precog Routing','Taps earn +12% of $/sec',{pct:.12});
+T('tap8',1e15,'🛸','Quantum Dispatch','Taps earn +1% of $/sec',{pct:.01});
+T('auto4',1e16,'🦾','Robo-Drivers','Auto-drive at 8 taps/sec',{auto:8});
+T('tap9',1e20,'🔮','Precog Routing','Taps earn +1% of $/sec',{pct:.01});
 [[2e4,'💳','Fuel Card',1.25],[5e5,'📝','Union Contract',1.5],[5e7,'⚓','Port Partnership',2],[5e9,'🚆','Rail Intermodal',2],[5e11,'🛩️','Air Cargo Wing',2],[5e13,'🌐','Global Logistics Net',3],[5e15,'🪐','Orbital Depot',3],[5e17,'♾️','Infinite Supply Chain',5],[5e19,'🔭','Interplanetary Charter',5],[5e21,'🧲','Gravity Tethers',5],[5e23,'🌠','Wormhole Express',10],[5e26,'🕳️','Multiverse Logistics',10],[5e29,'✨','Cosmic Monopoly',25]]
  .forEach(([c,ic,n,g],k)=>T('g'+k,c,ic,n,'All income ×'+g,{g}));
 const FU=[[1,10,'Retreaded Tires'],[5,50,'Veteran Drivers'],[25,500,'GPS Telematics'],[50,5e4,'Aero Skirts'],[100,5e6,'Platooning'],[150,5e8,'Hydrogen Swap'],[200,5e10,'Fusion Drives'],[250,5e12,'Quantum Cargo'],[300,5e14,'Singularity Drives'],[400,5e17,'Reality Benders'],[500,5e20,'Time-Folded Freight']];
-FLEET.forEach((f,i)=>FU.forEach(([need,m,n],k)=>UPS.push({id:`f${i}_${k}`,cost:f.base*m,ic:f.icon,name:n,desc:`${f.name}s ×2`,e:{f:i,x:2},need})));
+FLEET.forEach((f,i)=>FU.forEach(([need,m,n],k)=>UPS.push({id:`f${i}_${k}`,cost:f.base*Math.max(10,Math.pow(PACE.vg,need)*PACE.fu),ic:f.icon,name:n,desc:`${f.name}s ×2`,e:{f:i,x:2},need})));
+FLEET.forEach(f=>f.base*=PACE.k);UPS.forEach(u=>u.cost*=PACE.k);
 
 const ACH=[
  ['🏁','First Delivery','Complete a delivery',()=>S.deliveries>=1],
@@ -89,20 +93,27 @@ const ACH=[
  ['🗂️','Prime Contractor','Complete 100 contracts',()=>S.contractsDone>=100],
  ['💠','Board Member','Buy an executive perk',()=>perkTotal()>=1],
  ['🏛️','Chairman','Own 25 perk levels',()=>perkTotal()>=25],
- ['🤖','Hands Off','Own every automation perk',()=>['autoFleet','autoUp','autoRoute','magnet','autoClaim'].every(has)],
+ ['🤖','Hands Off','Own every automation perk',()=>['autoFleet','autoUp','autoRoute','autoRoad','magnet','autoClaim'].every(has)],
+ ['🛣️','Trailblazer','Open 10 lanes',()=>(S.lanesOpened||0)>=10],
+ ['🏗️','Hub Builder','Build 10 hubs',()=>(S.hubsBuilt||0)>=10],
+ ['🛤️','Interstate','Upgrade a road to Interstate',()=>Object.values(S.net||{}).some(n=>Object.values(n.l).some(v=>v>=7))],
+ ['🕸️','Spider Web','Have 12 lanes open in one region',()=>Object.values(S.net||{}).some(n=>Object.keys(n.l).length>=12)],
 ];
 const PERKS=[
  {id:'start',ic:'💼',name:'Seed Capital',max:6,base:5,g:5,info:l=>l?`Start each run with ${money(Math.pow(1000,l))}`:'Start each run with $0'},
- {id:'keepRoute',ic:'🗺️',name:'Route Rights',max:9,base:10,g:4,info:l=>l?`Keep routes up to ${ROUTES[l].name} on IPO`:'Routes reset on IPO'},
+ {id:'keepRoute',ic:'🗺️',name:'Route Rights',max:9,base:10,g:4,info:l=>l?`Keep regions up to ${ROUTES[l].name} unlocked on IPO`:'Regions reset on IPO'},
+ {id:'survey',ic:'📐',name:'Surveyors',max:5,base:8,g:3,info:l=>`Lanes, roads & hubs cost ${l*8}% less`},
+ {id:'keepNet',ic:'🛣️',name:'Eminent Domain',max:1,base:60,info:()=>'Keep every region and your whole road network on IPO'},
  {id:'keepUps',ic:'🧳',name:'Corporate Memory',max:1,base:40,info:()=>'Keep tap, auto-drive, combo, broker & night-shift upgrades on IPO'},
  {id:'yield',ic:'📈',name:'Shareholder Value',max:10,base:15,g:3,info:l=>`Each share gives +${(2+l*.5).toFixed(1)}%`},
- {id:'brand',ic:'🏷️',name:'Brand Recognition',max:60,base:25,g:3.5,info:l=>`All income ×${fmt(Math.pow(2,l))}`},
+ {id:'brand',ic:'🏷️',name:'Brand Recognition',max:30,base:20,g:2.6,info:l=>`All income ×${fmt(Math.pow(1.5,l))}`},
  {id:'offline',ic:'📒',name:'Long-Haul Logbook',max:6,base:8,g:3,info:l=>`Offline earnings cap ${8+4*l}h`},
- {id:'rushHQ',ic:'📡',name:'Dispatch HQ',max:4,base:10,g:3,info:l=>`Rush orders ${(1+.25*l).toFixed(2)}× as often`},
+ {id:'rushHQ',ic:'📡',name:'Dispatch HQ',max:4,base:10,g:3,info:l=>`Rush orders & surges ${(1+.25*l).toFixed(2)}× as often`},
  {id:'contracts',ic:'🤝',name:'Preferred Carrier',max:5,base:12,g:3,info:l=>`Contract rewards ×${(1+.5*l).toFixed(1)}`},
- {id:'autoFleet',ic:'🚛',name:'Fleet Manager',max:1,base:20,tog:'fleet',info:()=>'Automatically buys the best-value vehicle'},
+ {id:'autoFleet',ic:'🚛',name:'Fleet Manager',max:1,base:20,tog:'fleet',info:()=>'Buys the best-value vehicle whenever your network has room for more trucks'},
  {id:'autoUp',ic:'🔧',name:'Procurement Dept.',max:1,base:35,tog:'up',info:()=>'Automatically buys affordable upgrades'},
- {id:'autoRoute',ic:'🧭',name:'Route Planner',max:1,base:50,tog:'route',info:()=>'Automatically unlocks the next route'},
+ {id:'autoRoute',ic:'🧭',name:'Route Planner',max:1,base:50,tog:'route',info:()=>'Automatically unlocks the next region'},
+ {id:'autoRoad',ic:'👷',name:'Civil Engineers',max:1,base:45,tog:'road',info:()=>'Automatically upgrades your most congested road'},
  {id:'magnet',ic:'🧲',name:'Rush Magnet',max:1,base:30,tog:'magnet',info:()=>'Automatically catches rush orders'},
  {id:'autoClaim',ic:'📥',name:'Back Office',max:1,base:25,tog:'claim',info:()=>'Automatically claims finished contracts'},
 ];
@@ -126,16 +137,19 @@ function dur(s){if(!isFinite(s))return '∞';s=Math.floor(s);const d=Math.floor(
 
 /* ---------- state ---------- */
 const KEY='haulEmpire_v1';
-const runState=()=>({cash:0,runEarn:0,fleet:FLEET.map(()=>0),ups:{},route:0,prog:0,boosts:[]});
-const newGame=()=>Object.assign(runState(),{allEarn:0,shares:0,ipos:0,taps:0,deliveries:0,goldens:0,maxCombo:0,ach:{},sound:true,haptic:true,buyAmt:1,last:Date.now(),started:Date.now(),div:0,perks:{},autos:{fleet:1,up:1,route:1,magnet:1,claim:1},contracts:[],contractsDone:0,bought:0,rerollAt:0,sci:false,lowfx:false});
+const runState=()=>({cash:0,runEarn:0,fleet:FLEET.map((_,i)=>i?0:1),ups:{},route:0,prog:0,boosts:[],net:{}});
+const newGame=()=>Object.assign(runState(),{allEarn:0,shares:0,ipos:0,taps:0,deliveries:0,goldens:0,maxCombo:0,ach:{},sound:true,haptic:true,buyAmt:1,last:Date.now(),started:Date.now(),div:0,perks:{},autos:{fleet:1,up:1,route:1,road:1,magnet:1,claim:1},net:{},lanesOpened:0,hubsBuilt:0,roadsBuilt:0,ver:3,contracts:[],contractsDone:0,bought:0,rerollAt:0,sci:false,lowfx:false});
 let S=null,D={},noSave=false;
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&typeof d==='object'){const ng=newGame();S=Object.assign(ng,d);S.autos=Object.assign(newGame().autos,d.autos||{});while(S.fleet.length<FLEET.length)S.fleet.push(0);return true}}catch(e){}S=newGame();return false}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&typeof d==='object'){const ng=newGame();S=Object.assign(ng,d);S.ver=d.ver||2;S.autos=Object.assign(newGame().autos,d.autos||{});while(S.fleet.length<FLEET.length)S.fleet.push(0);return true}}catch(e){}S=newGame();return false}
 function save(){if(noSave)return;S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const fleetTotal=()=>S.fleet.reduce((a,b)=>a+b,0);
 const milestones=n=>MILES.filter(m=>n>=m).length;
 const nextMile=n=>MILES.find(m=>m>n)||Infinity;
 const prevMile=n=>{let p=0;for(const m of MILES)if(n>=m)p=m;return p};
-const totalSharesFor=e=>Math.floor(Math.sqrt(e/1e7));
+const SHARE={div:1e10,exp:1/3,dk:4};
+const totalSharesFor=e=>Math.floor(Math.pow(e/SHARE.div,SHARE.exp));
+const sharesNeeded=n=>Math.pow(n,1/SHARE.exp)*SHARE.div;
+const divFor=n=>n>0?Math.max(1,Math.floor(SHARE.dk*Math.log10(1+n))):0;
 const pendingShares=()=>Math.max(0,totalSharesFor(S.allEarn)-S.shares);
 
 function calc(){
@@ -148,12 +162,18 @@ function calc(){
   if(e.combo)comboCap=Math.max(comboCap,e.combo);if(e.off)offline=e.off;if(e.broker)broker=true;if('f' in e)fm[e.f]*=e.x}
  const achN=Object.keys(S.ach).length;
  const shareRate=.02+.005*perkLvl('yield');
- const perm=ROUTES[S.route].mult*(1+shareRate*S.shares)*(1+.01*achN)*global*Math.pow(2,perkLvl('brand'));
+ const perm=(1+shareRate*S.shares)*(1+.01*achN)*global*Math.pow(1.5,perkLvl('brand'));
  let tail=1,nitro=1;for(const b of S.boosts){if(b.k==='tail')tail*=b.m;if(b.k==='nitro')nitro*=b.m}
- const unit=FLEET.map((f,i)=>f.rate*fm[i]*perm);
- const income=unit.reduce((a,u,i)=>a+u*S.fleet[i],0)*tail;
- const baseTap=(tapMult*perm+income*tapPct)*nitro;
- D={tapMult,tapPct,auto,global,comboCap,offline,broker,fm,unit,income,baseTap,perm,tail,nitro,achN,shareRate,offCap:(8+4*perkLvl('offline'))*3600,rushMult:1+.25*perkLvl('rushHQ'),cMult:1+.5*perkLvl('contracts')};
+ const cap=FLEET.map((f,i)=>f.rate*fm[i]);
+ const F=cap.reduce((a,u,i)=>a+u*S.fleet[i],0);
+ const arcs=netArcs(),sol=solveNet(F,arcs);
+ const income=sol.inc*perm*tail;
+ const unit=cap.map(u=>u*sol.lam*perm);
+ const baseTap=(tapMult*perm*Math.sqrt(ROUTES[S.route].val)+income*tapPct)*nitro;
+ const netMax=arcs.reduce((a,x)=>a+x.c,0);
+ D={tapMult,tapPct,auto,global,comboCap,offline,broker,fm,cap,F,unit,income,baseTap,perm,tail,nitro,achN,shareRate,arcs,sol,lam:sol.lam,util:F>0?sol.used/F:1,netMax,offCap:(8+4*perkLvl('offline'))*3600,rushMult:(1+.25*perkLvl('rushHQ'))*(broker?2:1),cMult:1+.5*perkLvl('contracts')};
 }
+const costN=(i,n)=>{const q=PACE.vg;return FLEET[i].base*Math.pow(q,S.fleet[i])*(Math.pow(q,n)-1)/(q-1)};
+function maxN(i){const q=PACE.vg,c0=FLEET[i].base*Math.pow(q,S.fleet[i]);if(S.cash<c0)return 0;return Math.floor(Math.log(S.cash*(q-1)/c0+1)/Math.log(q))}
 function earn(v){S.cash+=v;S.runEarn+=v;S.allEarn+=v}
 

@@ -33,7 +33,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 
 /* scene */
 #scene{position:relative;height:36vh;min-height:210px;max-height:330px;overflow:hidden;touch-action:manipulation;cursor:pointer;
-  background:linear-gradient(to bottom,var(--s0,#5ab8ff) 0%,var(--s1,#bfe6ff) 56%,var(--gr,#5aa04c) 56%);transition:background .6s}
+  background:linear-gradient(to bottom,var(--s0,#5ab8ff) 0%,var(--s1,#bfe6ff) 56%,var(--gr,#5aa04c) 56%);transition:background .6s,height .25s}
 .layer{position:absolute;left:0;right:0;background-repeat:repeat-x;background-size:auto 100%;pointer-events:none}
 #far{bottom:42%;height:40%}
 #mid{bottom:36%;height:36%}
@@ -151,7 +151,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 @keyframes dotp{to{transform:scale(1.25)}}
 
 /* toasts & modal */
-#toasts{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 70px);z-index:20;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 12px}
+#toasts{position:absolute;left:0;right:0;bottom:7px;z-index:9;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 12px}
 .toast{background:#0c0e13ee;border:1px solid var(--line);border-left:4px solid var(--acc);padding:7px 12px;border-radius:11px;font-size:12px;font-weight:700;box-shadow:0 8px 24px #0008;animation:tin .25s ease-out,tout .3s ease-in 2.1s forwards;max-width:100%}
 .toast.ach{border-left-color:#facc15}.toast.blue{border-left-color:var(--blue)}.toast.gt{border-left-color:#ffd34d;background:#2a2108ee}
 @keyframes tin{from{transform:translateY(12px);opacity:0}}
@@ -186,6 +186,39 @@ textarea.code{width:100%;height:110px;background:#0d0f14;color:var(--txt);border
 .r2{animation-delay:-.6s}
 @keyframes rp{to{opacity:.15;transform:scale(1.06)}}
 #tabs button{font-size:10.5px}
+#app.mapmode #scene{height:22vh;min-height:150px}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:0 -10px 8px;padding:0 10px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip2{flex:none;padding:7px 11px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-weight:800;font-size:12px;white-space:nowrap}
+.chip2.on{background:var(--acc);color:#2a1700;border-color:var(--acc)}
+.chip2.lock{border-style:dashed;color:var(--mut)}
+.netstat{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
+.netstat.mini{padding:7px 10px}
+.nsrow{display:flex;justify-content:space-between;font-size:12px;font-weight:800}
+.nbar{height:6px;background:#0d0f14;border-radius:99px;overflow:hidden;margin-top:5px}
+.nbar i{display:block;height:100%;width:0;background:#4ade80;transition:width .3s,background .3s}
+.nhint{font-size:11.5px;color:var(--mut);margin-top:5px;font-weight:600}
+.mapwrap{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b0d14;touch-action:manipulation}
+svg.map{display:block;width:100%;height:auto}
+svg.map text.cn{paint-order:stroke;stroke:#0b0d14;stroke-width:.7px;pointer-events:none}
+svg.map text{pointer-events:none;font-family:system-ui,-apple-system,sans-serif}
+.zap{animation:zp .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes zp{to{transform:scale(1.35)}}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-top:8px;min-height:92px}
+.sh-t{font-weight:800;font-size:16px}
+.sh-s{font-size:12px;color:var(--acc);font-weight:800}
+.sh-p{font-size:12.5px;color:var(--mut);margin:6px 0 2px;line-height:1.4}
+.sh-p b{color:var(--txt)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px;margin:8px 0}
+.kv span{color:var(--mut)}.kv b{text-align:right}.kv b.g{color:var(--good)}
+.buy.wide{width:100%;flex-direction:row;justify-content:space-between;padding:10px 12px;margin-top:6px}
+.buy.wide small{font-size:12px;opacity:1;font-weight:700}
+.tip{display:block;width:100%;text-align:left;margin-top:8px;padding:9px 11px;border-radius:11px;background:#1d2a20;border:1px solid #2f6b45;font-size:12.5px;line-height:1.35}
+.tip span{display:block;color:var(--good);font-size:11.5px;font-weight:700;margin-top:2px}
+.zapb{font-size:11px;background:var(--acc);color:#2a1700;border-radius:6px;padding:1px 5px;vertical-align:2px}
+.legend{display:flex;gap:12px;justify-content:center;margin:8px 0 2px;font-size:11px;color:var(--mut);font-weight:700}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:4px;vertical-align:2px}
+.legend i.dash{background:repeating-linear-gradient(90deg,#aab3c5 0 4px,transparent 4px 7px)}
 @media (min-width:521px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 @media (max-height:640px){#scene{height:32vh;min-height:180px}#cash{font-size:24px}}
 </style>
@@ -207,6 +240,7 @@ textarea.code{width:100%;height:110px;background:#0d0f14;color:var(--txt);border
     <div id="banner"><div class="t">DELIVERED!</div><div class="s"></div></div>
     <div id="boosts"></div>
     <div id="hint">👆 TAP TO DRIVE</div>
+    <div id="toasts"></div>
   </div>
   <div id="delivery">
     <div class="drow"><span id="dLabel">📦 Delivery #1</span><span id="dPay">+$0</span></div>
@@ -218,15 +252,16 @@ textarea.code{width:100%;height:110px;background:#0d0f14;color:var(--txt);border
   <nav id="tabs">
     <button data-tab="fleet" class="on"><span class="ti">🚛</span>Fleet<i class="dot"></i></button>
     <button data-tab="upgrades"><span class="ti">🔧</span>Upgrades<i class="dot"></i></button>
-    <button data-tab="routes"><span class="ti">🗺️</span>Routes<i class="dot"></i></button>
+    <button data-tab="map"><span class="ti">🗺️</span>Map<i class="dot"></i></button>
     <button data-tab="jobs"><span class="ti">📋</span>Jobs<i class="dot"></i></button>
     <button data-tab="empire"><span class="ti">🏢</span>Empire<i class="dot"></i></button>
   </nav>
-  <div id="toasts"></div>
   <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
 </div>
 <script src="js/data.js"></script>
+<script src="js/net.js"></script>
 <script src="js/art.js"></script>
+<script src="js/map.js"></script>
 <script src="js/game.js"></script>
 </body>
 </html>
